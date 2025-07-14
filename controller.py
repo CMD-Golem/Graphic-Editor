@@ -18,14 +18,6 @@ class Controller(Subject):
 		self.window.columnconfigure(1, weight=1)
 		self.window.rowconfigure(0, weight=1)
 
-		self.treeview = ttk.Treeview(self.window, columns=("pos","size","color","id"))
-		self.treeview.heading("#0", text="name")
-		self.treeview.heading("pos", text="Position")
-		self.treeview.heading("size", text="Size")
-		self.treeview.heading("color", text="Color")
-		self.treeview.heading("id", text="ID")
-		self.treeview.grid(row=0, column=0, sticky="NESW")
-
 		settings = tk.LabelFrame(self.window, text="Update and add figures")
 		self.label = tk.Label(settings, text="")
 		self.label.pack(fill="x", expand=True)
