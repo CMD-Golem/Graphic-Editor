@@ -1,9 +1,14 @@
 import tkinter as tk
+from abc import ABC, abstractmethod
 
 from shapes import Composite
 
+class Observer(ABC):
+	@abstractmethod
+	def update(self, subject):
+		pass
 
-class Subject():
+class Subject(ABC):
 	def __init__(self):
 		# Liste um die Beobachter zu Speichern
 		self._observers = []

@@ -1,4 +1,4 @@
-from controller_with_table import *
+from controller import *
 from drawing_view import *
 from shapes import *
 from observer import *

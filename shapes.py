@@ -1,8 +1,9 @@
 from __future__ import annotations # make recursive type hint possible
+from abc import ABC
 
 import tkinter as tk
 
-class Component():
+class Component(ABC):
 	def __init__(self, x:int, y:int, c:str, id:int):
 		self.pos_x = x
 		self.pos_y = y
@@ -108,7 +109,7 @@ class Composite(Component):
 	def draw(self, canvas:tk.Canvas):
 		x,w = self.get_bounding_box_x()
 		y,h = self.get_bounding_box_y()
-		canvas.create_polygon(x, y, x+w, y, x+w, y+h, x, y+h, outline=self.color, fill='')
+		canvas.create_rectangle(x, y, x+w, y+h, outline=self.color, fill='')
 
 		for el in self.components:
 			el.draw(canvas)
@@ -131,7 +132,7 @@ class Rectangle(Component):
 	def draw(self, canvas:tk.Canvas):
 		x,w = self.get_bounding_box_x()
 		y,h = self.get_bounding_box_y()
-		canvas.create_polygon(x, y, x+w, y, x+w, y+h, x, y+h, outline=self.color, fill='')
+		canvas.create_rectangle(x, y, x+w, y+h, outline=self.color, fill='')
 
 class Circle(Component):
 	def __init__(self, x:int, y:int, radius:int, color:str, id:int):
