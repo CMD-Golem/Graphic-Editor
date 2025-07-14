@@ -1,6 +1,5 @@
 import tkinter as tk
 from abc import ABC, abstractmethod
-
 from shapes import Composite
 
 class Observer(ABC):
@@ -14,11 +13,11 @@ class Subject(ABC):
 		self._observers = []
 
 	# Beobachter anmelden
-	def attach(self, observer:"Controller"):
+	def attach(self, observer):
 		self._observers.append(observer)
 
 	# Beobachter abmelden
-	def detach(self, observer:"Controller"):
+	def detach(self, observer):
 		self._observers.remove(observer)
 
 	# Beobachter benachrichtigen

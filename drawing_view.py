@@ -1,8 +1,7 @@
 import tkinter as tk
-
 from observer import *
 
-class Drawing:
+class Drawing(Observer):
 	def __init__(self, model:Model, destroy:Closer):
 		self.model = model
 		self.destroy = destroy
@@ -31,4 +30,7 @@ class Drawing:
 		self.window.mainloop()
 
 	def refresh(self):
+		self.model.draw(self.canvas)
+
+	def update(self):
 		self.model.draw(self.canvas)

@@ -1,11 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
-
 from shapes import *
 from observer import *
 
 
-class Controller(Subject):
+class Controller(Observer):
 	def __init__(self, model:Model, destroy:Closer):
 		super().__init__()
 		self.destroy = destroy
@@ -45,14 +44,15 @@ class Controller(Subject):
 	def run(self):
 		self.window.mainloop()
 
+	def update(self):
+		pass
+
 	def labeledEntry(self, parent:tk.Frame, label_text:str, i:int):
 		label = tk.Label(parent, text=label_text)
 		entry = tk.Entry(parent)
 		label.grid(row=i, column=0, pady=5)
 		entry.grid(row=i, column=1, sticky="NESW", pady=5)
-
 		return entry
-	
 	
 	def modify(self):
 		pass

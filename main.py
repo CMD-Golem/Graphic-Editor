@@ -1,5 +1,6 @@
-from controller import *
+from controller_view import *
 from drawing_view import *
+from tree_view import *
 from shapes import *
 from observer import *
 
@@ -10,6 +11,7 @@ c = Closer()
 
 controller = Controller(m, c)
 drawing = Drawing(m, c)
+tree = Tree(m, c)
 
 # ################################################################
 root = m.root
@@ -37,3 +39,4 @@ root.print_descriptor()
 
 drawing.run()
 controller.run()
+tree.run()
