@@ -49,6 +49,10 @@ class Figure(ABC):
 	def strRecursive(self, level:int):
 		print(level * "    ", self)
 
+	def treeRecursive(self, parent, treeview):
+		text = self.__str__()
+		return treeview.insert(parent, tk.END, text=text, values=(self.id))
+
 	def findId(self, id:int):
 		if id == self.id:
 			return self
@@ -140,6 +144,12 @@ class Group(Figure):
 		for figure in self.figures:
 			figure.strRecursive(level)
 
+	def treeRecursive(self, parent, treeview):
+		new_parent = super().treeRecursive(parent, treeview)
+
+		for figure in self.figures:
+			figure.treeRecursive(new_parent, treeview)
+
 	def findId(self, id:int):
 		# check if own id matches
 		if id == self.id:
@@ -148,7 +158,7 @@ class Group(Figure):
 		# go trough all own Figures and return id if matches
 		for figure in self.figures:
 			if not(figure.findId(id) == False):
-				return figure.findId(id)
+				return figure
 		
 		# return false if id couldnt be found
 		return False

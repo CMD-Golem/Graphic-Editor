@@ -13,29 +13,26 @@ controller = Controller(m, c)
 drawing = Drawing(m, c)
 tree = Tree(m, c)
 
-# ################################################################
 root = m.root
-cm1 = Group(300, 1, 1)
-cm2 = Group(1, 1, 2)
-cm21 = Group(1, 1, 3)
 
-root.add(cm1)
-cm1.add(Circle(1, 1, 50, "blue", 4))
-cm1.add(Circle(100, 1, 80, "blue", 5))
-cm1.add(Circle(50, 150, 20, "blue", 6))
+root.add(Circle(10, 30, 40, "black"))
+root.add(Rectangle(45, 90, 40, 60, "red"))
 
-root.add(cm2)
-cm2.add(cm21)
+g2 = Group(100, 200)
 
-cm21.add(Rectangle(1, 1, 20, 20, "red", 7))
-cm21.add(Rectangle(100, 1, 50, 50, "red", 8))
+g2.add(Circle(0, 0, 100, "green"))
+g2.add(Rectangle(175, 85, 50, 50, "blue"))
 
-cm2.add(Rectangle(1, 1, 30, 80, "green", 9))
-cm2.add(Rectangle(200, 50, 100, 50, "green", 10))
+root.add(g2)
 
-root.add(Rectangle(100, 200, 30, 80, "yellow", 11))
 
-root.strRecursive()
+
+
+m.draw(drawing.canvas)
+controller.loadFigures()
+tree.loadFigures()
+
+print(root.strRecursive(0))
 
 drawing.run()
 controller.run()
