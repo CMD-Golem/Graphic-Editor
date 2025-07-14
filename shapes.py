@@ -1,154 +1,226 @@
 from __future__ import annotations # make recursive type hint possible
-from abc import ABC
+from abc import ABC, abstractmethod
 
 import tkinter as tk
 
-class Component(ABC):
-	def __init__(self, x:int, y:int, c:str, id:int):
-		self.pos_x = x
-		self.pos_y = y
-		self.color = c
-		self.id = id
+# Component
+class Figure(ABC):
+	def __init__(self, x:int, y:int, col:str):
+		self.rel_x = x
+		self.rel_y = y
+		self.color = col
+		self.id = None
 		self.parent = None
+		self.border = 2
+		self.selected = False
 
 	def __str__(self):
-		(min_x, max_x) = self.get_bounding_box_x()
-		(min_y, max_y) = self.get_bounding_box_y()
+		return f"(x {self.getX()}, y {self.getY()}, w {self.getBoundingBoxWidth()}, h {self.getBoundingBoxHeight()}), (abs: x {self.getAbsX()}, y {self.getAbsY()}), col:{self.color}"
 
-		return f"pos: {self.pos_x}, {self.pos_y}; pos_abs: {self.get_absolute_x()}, {self.get_absolute_y()}; bounding_box: {max_x - min_x}, {max_y - min_y}"
-	
-	def set_parent(self, parent:Composite):
+	def set_parent(self, parent:Figure):
 		self.parent = parent
 
-	def get_absolute_x(self):
-		if self.parent:
-			return self.parent.get_absolute_x() + self.pos_x
-		else:
-			return self.pos_x
+	def getX(self):
+		return self.rel_x
+	
+	def getY(self):
+		return self.rel_y
 
-	def get_absolute_y(self):
+	def getAbsX(self):
 		if self.parent:
-			return self.parent.get_absolute_y() + self.pos_y
+			return self.parent.getAbsX() + self.getX()
 		else:
-			return self.pos_y
+			return self.getX()
+
+	def getAbsY(self):
+		if self.parent:
+			return self.parent.getAbsY() + self.getY()
+		else:
+			return self.getY()
+	
+	@abstractmethod
+	def getBoundingBoxWidth(self):
+		pass
+
+	@abstractmethod
+	def getBoundingBoxHeight(self):
+		pass
 		
-	def print_descriptor(self, i:int):
-		print(i * "    ", self)
+	def strRecursive(self, level:int):
+		print(level * "    ", self)
 
 	def findId(self, id:int):
 		if id == self.id:
 			return self
 		else:
 			return False
+		
+	def findSelected(self):
+		if self.selected:
+			return self
+		else:
+			return False
+		
+	def deselect(self, canvas):
+		canvas.itemconfig(self.id, width=self.border)
+		self.selected = False
+		
+	@abstractmethod
+	def draw(self):
+		pass
 
-class Composite(Component):
-	def __init__(self, x:int, y:int, id:int):
-		super().__init__(x, y, "purple", id)
-		self.components: list[Component] = []
+# Composite
+class Group(Figure):
+	def __init__(self, x:int=0, y:int=0):
+		super().__init__(x, y, "magenta")
+		self.figures: list[Figure] = []
 
 	def __str__(self):
-		return f"Composite: ({super().__str__()})"
+		return f"Group: {super().__str__()}"
 	
-	def add_component(self, component:Composite):
-		component.set_parent(self)
-		self.components.append(component)
+	def add(self, figure:Figure):
+		figure.set_parent(self)
+		self.figures.append(figure)
 
-	def get_bounding_box_x(self):
-		min_x = None
-		max_x = 0
+	def getBoundingBoxX(self):
+		# get lowest (most left) x of figure in group
+		x = 0
+		for figure in self.figures:
+			figure_x = figure.getX()
+			if (figure_x < x):
+				x = figure_x
 
-		for el in self.components:
-			(min, max) = el.get_bounding_box_x()
-			
-			if (max > max_x):
-				max_x = max
-			if (min_x == None or min < min_x):
-				min_x = min
+		# add lowest x to own abs x
+		return self.getAbsX() + x
 
-		if (min_x == None):
-			min_x = 0
-		
-		return min_x, max_x
+	def getBoundingBoxY(self):
+		# get lowest (heighest) y of figure in group
+		y = 0
+		for figure in self.figures:
+			figure_y = figure.getY()
+			if (figure_y < y):
+				y = figure_y
 
-	def get_bounding_box_y(self):
-		min_y = None
-		max_y = 0
+		# add lowest y to own abs y
+		return self.getAbsY() + y
 
-		for el in self.components:
-			(min, max) = el.get_bounding_box_y()
+	def getBoundingBoxWidth(self):
+		# find leftmost and rightmost x'es
+		leftmost = 0
+		rightmost = 0
+		for figure in self.figures:
+			figure_left = figure.getX()
+			figure_right = figure_left + figure.getBoundingBoxWidth()
 
-			if (max > max_y):
-				max_y = max
-			if (min_y == None or min < min_y):
-				min_y = min
+			if (figure_left < leftmost):
+				leftmost = figure_left
+			if (figure_right > rightmost):
+				rightmost = figure_right
 
-		if (min_y == None):
-			min_y = 0
+		return rightmost - leftmost
 
-		return min_y, max_y
+	def getBoundingBoxHeight(self):
+		# find highest and lowest y'es
+		highest = 0
+		lowest = 0
+		for figure in self.figures:
+			figure_top = figure.getY()
+			figure_bottom = figure_top + figure.getBoundingBoxHeight()
+
+			if (figure_top < highest):
+				highest = figure_top
+			if (figure_bottom > lowest):
+				lowest = figure_bottom
+
+		return lowest - highest
 	
-	def print_descriptor(self, i:int=0):
-		print(i * "    ", self)
-		i += 1
-		for el in self.components:
-			el.print_descriptor(i)
+	def strRecursive(self, level:int=0):
+		super().strRecursive(level)
+		level += 1
+		for figure in self.figures:
+			figure.strRecursive(level)
 
 	def findId(self, id:int):
 		# check if own id matches
 		if id == self.id:
 			return self
 		
-		# go trough all own components and return id if matches
-		for el in self.components:
-			if not(el.findId(id) == False):
-				return el.findId(id)
+		# go trough all own Figures and return id if matches
+		for figure in self.figures:
+			if not(figure.findId(id) == False):
+				return figure.findId(id)
 		
 		# return false if id couldnt be found
 		return False
 	
+	def findSelected(self):
+		# check if own id matches
+		if self.selected:
+			return self
+		
+		# go trough all own Figures and return id if matches
+		for figure in self.figures:
+			if not(figure.findSelected() == False):
+				return figure.findSelected()
+		
+		# return false if id couldnt be found
+		return False
+	
+	def deselect(self, canvas):
+		super().deselect(canvas)
+
+		for figure in self.figures:
+			figure.deselect(canvas)
+	
 	def draw(self, canvas:tk.Canvas):
-		x,w = self.get_bounding_box_x()
-		y,h = self.get_bounding_box_y()
-		canvas.create_rectangle(x, y, x+w, y+h, outline=self.color, fill='')
+		x = self.getBoundingBoxX() + self.border*2
+		y = self.getBoundingBoxY() + self.border*2
+		w = self.getBoundingBoxWidth() + self.border*2
+		h = self.getBoundingBoxHeight() + self.border*2
+		self.id = canvas.create_rectangle(x, y, x+w, y+h, outline=self.color, dash=(50), fill='', width=self.border)
 
-		for el in self.components:
-			el.draw(canvas)
+		for figure in self.figures:
+			figure.draw(canvas)
 
-class Rectangle(Component):
-	def __init__(self, x:int, y:int, width:int, height:int, color:str, id:int):
-		super().__init__(x, y, color, id)
+class Rectangle(Figure):
+	def __init__(self, x:int, y:int, width:int, height:int, color:str):
+		super().__init__(x, y, color)
 		self.width = width
 		self.height = height
 
 	def __str__(self):
-		return f"Rectangle: (size: {self.width}, {self.height}; {super().__str__()})"
+		return f"Rectangle: {super().__str__()}, (w: {self.width}, h: {self.height})"
 	
-	def get_bounding_box_x(self):
-		return (self.get_absolute_x(), self.get_absolute_x() + self.width)
+	def getBoundingBoxWidth(self):
+		return self.width
 		
-	def get_bounding_box_y(self):
-		return (self.get_absolute_y(), self.get_absolute_y() + self.height)
+	def getBoundingBoxHeight(self):
+		return self.height
 	
 	def draw(self, canvas:tk.Canvas):
-		x,w = self.get_bounding_box_x()
-		y,h = self.get_bounding_box_y()
-		canvas.create_rectangle(x, y, x+w, y+h, outline=self.color, fill='')
+		x = self.getAbsX() + self.border*2
+		y = self.getAbsY() + self.border*2
+		w = self.getBoundingBoxWidth() + self.border*2
+		h = self.getBoundingBoxHeight() + self.border*2
+		self.id = canvas.create_rectangle(x, y, x+w, y+h, outline=self.color, width=self.border, fill='')
 
-class Circle(Component):
-	def __init__(self, x:int, y:int, radius:int, color:str, id:int):
-		super().__init__(x, y, color, id)
+class Circle(Figure):
+	def __init__(self, x:int, y:int, radius:int, color:str):
+		super().__init__(x, y, color)
 		self.radius = radius
 
 	def __str__(self):
-		return f"Circle: (radius: {self.radius}; {super().__str__()})"
+		return f"Circle: {super().__str__()}, r: {self.radius}"
 	
-	def get_bounding_box_x(self):
-		return (self.get_absolute_x() - self.radius, self.get_absolute_x() + self.radius)
+	def getBoundingBoxWidth(self):
+		return 2* self.radius
 		
-	def get_bounding_box_y(self):
-		return (self.get_absolute_y() - self.radius, self.get_absolute_y() + self.radius)
+	def getBoundingBoxHeight(self):
+		return 2* self.radius
 	
 	def draw(self, canvas:tk.Canvas):
-		x,w = self.get_bounding_box_x()
-		y,h = self.get_bounding_box_y()
-		canvas.create_oval(x, y, x+w, y+h, outline=self.color, fill='')
+		x = self.getAbsX() + self.border*2
+		y = self.getAbsY() + self.border*2
+		w = self.getBoundingBoxWidth() + self.border*2
+		h = self.getBoundingBoxHeight() + self.border*2
+		self.id = canvas.create_oval(x, y, x+w, y+h, outline=self.color, width=self.border, fill='')
