@@ -11,7 +11,7 @@ class Drawing(Observer):
 		self.window = tk.Tk()
 		self.window.protocol("WM_DELETE_WINDOW", self.destroy.destroy)
 
-		button = tk.Button(self.window, text="Refresh", command=self.refresh)
+		button = tk.Button(self.window, text="Refresh", command=self.update)
 		button.pack()
 
 		self.canvas = tk.Canvas(self.window, width=800, height=800)
@@ -28,9 +28,6 @@ class Drawing(Observer):
 
 	def run(self):
 		self.window.mainloop()
-
-	def refresh(self):
-		self.model.draw(self.canvas)
 
 	def update(self):
 		self.model.draw(self.canvas)

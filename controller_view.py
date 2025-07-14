@@ -2,13 +2,15 @@ import tkinter as tk
 from tkinter import ttk
 from shapes import *
 from observer import *
+from tree_view import *
 
 
 class Controller(Observer):
-	def __init__(self, model:Model, destroy:Closer):
+	def __init__(self, model:Model, destroy:Closer, tree_view: Tree):
 		super().__init__()
 		self.destroy = destroy
 		self.model: Model = model
+		self.treeview = tree_view.treeview
 		model.attach(self)
 		destroy.attach(self)
 
@@ -58,13 +60,21 @@ class Controller(Observer):
 		pass
 	
 	def updateGroup(self, component):
-		selected = self.treeview.item(self.treeview.focus())
-		Group = self.model.get(selected.get("values")[3])
+		selected = self.treeview.focus()
 
-		if not(type(Group, Group)):
-			Group = Group.parent
+		targetGroup = self.model.root
+
+		if selected:
+			selectedItem = self.treeview.item(selected)
+			selectedID = int(selectedItem.get("values")[3])
+			targetItem = self.model.get(selectedID)
+
+		if isinstance(targetItem, Group):
+			targetGroup = targetItem
+		else:
+			targetGroup = targetItem.parent
 		
-		Group.add_component(component)
+		targetGroup.add(component)
 		self.model.notify_observers()
 	
 	def addRectangle(self):

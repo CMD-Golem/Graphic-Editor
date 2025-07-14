@@ -9,10 +9,11 @@ from observer import *
 m = Model()
 c = Closer()
 
-controller = Controller(m, c)
-drawing = Drawing(m, c)
 tree = Tree(m, c)
+controller = Controller(m, c, tree)
+drawing = Drawing(m, c)
 
+ 
 # ################################################################
 root = m.root
 cm1 = Group(300, 1, 1)
@@ -36,6 +37,8 @@ cm2.add(Rectangle(200, 50, 100, 50, "green", 10))
 root.add(Rectangle(100, 200, 30, 80, "yellow", 11))
 
 root.strRecursive()
+
+m.notify_observers()
 
 drawing.run()
 controller.run()
