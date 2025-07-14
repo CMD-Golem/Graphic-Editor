@@ -71,9 +71,10 @@ class Figure(ABC):
 
 # Composite
 class Group(Figure):
-	def __init__(self, x:int=0, y:int=0):
+	def __init__(self, x:int=0, y:int=0, id: int=None):
 		super().__init__(x, y, "magenta")
 		self.figures: list[Figure] = []
+		self.id = id
 
 	def __str__(self):
 		return f"Group: {super().__str__()}"
@@ -183,10 +184,11 @@ class Group(Figure):
 			figure.draw(canvas)
 
 class Rectangle(Figure):
-	def __init__(self, x:int, y:int, width:int, height:int, color:str):
+	def __init__(self, x:int, y:int, width:int, height:int, color:str, id: int=None):
 		super().__init__(x, y, color)
 		self.width = width
 		self.height = height
+		self.id = id
 
 	def __str__(self):
 		return f"Rectangle: {super().__str__()}, (w: {self.width}, h: {self.height})"
@@ -205,9 +207,10 @@ class Rectangle(Figure):
 		self.id = canvas.create_rectangle(x, y, x+w, y+h, outline=self.color, width=self.border, fill='')
 
 class Circle(Figure):
-	def __init__(self, x:int, y:int, radius:int, color:str):
+	def __init__(self, x:int, y:int, radius:int, color:str, id: int=None):
 		super().__init__(x, y, color)
 		self.radius = radius
+		self.id = id
 
 	def __str__(self):
 		return f"Circle: {super().__str__()}, r: {self.radius}"
