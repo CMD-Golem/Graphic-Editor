@@ -33,7 +33,7 @@ class Controller(Observer):
 		b1 = tk.Button(settings, text="Update Selected Figure", command=self.modify)
 		b2 = tk.Button(settings, text="Create Rectangle", command=self.addRectangle)
 		b3 = tk.Button(settings, text="Create Circle", command=self.addCircle)
-		b4 = tk.Button(settings, text="Create Composite", command=self.addComposite)
+		b4 = tk.Button(settings, text="Create Group", command=self.addGroup)
 		b1.pack(fill="x", expand=True, padx=8, pady=5)
 		b2.pack(fill="x", expand=True, padx=8, pady=5)
 		b3.pack(fill="x", expand=True, padx=8, pady=5)
@@ -57,14 +57,14 @@ class Controller(Observer):
 	def modify(self):
 		pass
 	
-	def updateComposite(self, component:Component):
+	def updateGroup(self, component):
 		selected = self.treeview.item(self.treeview.focus())
-		composite = self.model.get(selected.get("values")[3])
+		Group = self.model.get(selected.get("values")[3])
 
-		if not(type(composite, Composite)):
-			composite = composite.parent
+		if not(type(Group, Group)):
+			Group = Group.parent
 		
-		composite.add_component(component)
+		Group.add_component(component)
 		self.model.notify_observers()
 	
 	def addRectangle(self):
@@ -75,7 +75,7 @@ class Controller(Observer):
 		h = self.h.get()
 		c= self.color.get()
 		
-		self.updateComposite(Rectangle(x, y, w, h, c, id))
+		self.updateGroup(Rectangle(x, y, w, h, c, id))
 	
 	def addCircle(self):
 		id = self.model.getNewId()
@@ -84,11 +84,11 @@ class Controller(Observer):
 		r = self.w.get()
 		c= self.color.get()
 		
-		self.updateComposite(Circle(x, y, r, c, id))
+		self.updateGroup(Circle(x, y, r, c, id))
 
-	def addComposite(self):
+	def addGroup(self):
 		id = self.model.getNewId()
 		x = self.x.get()
 		y = self.y.get()
 		
-		self.updateComposite(Composite(x, y, id))
+		self.updateGroup(Group(x, y, id))

@@ -1,6 +1,6 @@
 import tkinter as tk
 from abc import ABC, abstractmethod
-from shapes import Composite
+from shapes import Group
 
 class Observer(ABC):
 	@abstractmethod
@@ -29,7 +29,7 @@ class Subject(ABC):
 class Model(Subject):
 	def __init__(self):
 		super().__init__()
-		self.root = Composite(0, 0, 0)
+		self.root = Group(0, 0, 0)
 		self.id = 0
 
 	def getNewId(self):
