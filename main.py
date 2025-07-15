@@ -9,9 +9,10 @@ from observer import *
 m = Model()
 c = Closer()
 
+tree = Tree(m, c)
 controller = Controller(m, c)
 drawing = Drawing(m, c)
-tree = Tree(m, c)
+
 
 root = m.root
 
@@ -26,13 +27,11 @@ g2.add(Rectangle(175, 85, 50, 50, "blue"))
 root.add(g2)
 
 
+#print(root.strRecursive(0))
 
+m.root.draw(drawing.canvas)
+m.notify_observers(None)
 
-m.draw(drawing.canvas)
-controller.loadFigures()
-tree.loadFigures()
-
-print(root.strRecursive(0))
 
 drawing.run()
 controller.run()

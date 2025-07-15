@@ -4,7 +4,7 @@ from shapes import Group
 
 class Observer(ABC):
 	@abstractmethod
-	def update(self, subject):
+	def update(self, selected_id):
 		pass
 
 class Subject(ABC):
@@ -21,29 +21,27 @@ class Subject(ABC):
 		self._observers.remove(observer)
 
 	# Beobachter benachrichtigen
-	def notify_observers(self):
+	def notify_observers(self, id):
 		for observer in self._observers:
-			observer.update()
+			observer.update(id)
 
 # model
 class Model(Subject):
 	def __init__(self):
 		super().__init__()
-		self.root = Group(0, 0, 0)
+		self.root = Group(0, 0)
 		self.id = 0
+		self.selected_figure = None
 
-	def getNewId(self):
-		self.id += 1
-		return self.id
-	
-	def draw(self, canvas:tk.Canvas):
-		self.root.draw(canvas)
+	def setSelection(self, selected_id):
+		if selected_id != None:
+			self.selected_figure = self.root.findFigure(selected_id)
+			print(self.selected_figure)
+			print(type(self.selected_figure))
+			self.selected_figure.selected = True
+		self.notify_observers(selected_id)
+		
 
-	def get(self, id):
-		return self.root.findId(id)
-	
-	def set(self, path):
-		self.path = path
 
 # Class to close all windows
 class Closer:

@@ -10,42 +10,48 @@ class Tree(Observer):
         self.model: Model = model
         model.attach(self)
         destroy.attach(self)
-        
+
         self.window = tk.Tk()
         self.window.protocol("WM_DELETE_WINDOW", self.destroy.destroy)
         self.window.columnconfigure(1, weight=1)
         self.window.rowconfigure(0, weight=1)
         
-        self.treeview = ttk.Treeview(self.window, columns=("pos","size","color","id"))
-        self.treeview.heading("#0", text="name")
-        self.treeview.heading("pos", text="Position")
-        self.treeview.heading("size", text="Size")
-        self.treeview.heading("color", text="Color")
-        self.treeview.heading("id", text="ID")
+        self.treeview = ttk.Treeview(self.window, columns=("id"))
         self.treeview.grid(row=0, column=0, sticky="NESW")
+
+        self.treeview.bind("<Double-1>", self.getSelection)
 
     def run(self):
         self.window.mainloop()
+
+    def getSelection(self, event):
+        selected = self.treeview.selection()
+        self.deselect()
+
+        if len(selected) >= 1:
+            id = self.treeview.item(selected[0], "values")[0]
+
+            self.model.setSelection(int(id))
+
+    def deselect(self):
+        if len(self.treeview.selection()) > 0:
+            self.treeview.selection_remove(self.treeview.selection()[0])
+        self.model.root.deselect()
+
+    def update(self, selected_id):
+        self.model.root.treeRecursive("", self.treeview) #lädt daten ins treeview
+
+        #klappt alles aus
+        for item in self.treeview.get_children():
+            self.treeview.item(item, open=True)
+
+        #wählt ID aus
+        if selected_id != None:
+            for item in self.treeview.get_children(): 
+                current_id = self.treeview.item(item, "values")[0]
+                if selected_id == current_id:
+                    self.treeview.selection_set(item)
         
-    #hilfsfunktion
-    def fill_tree(self, parent_node, figure):
-        pos = f"({figure.getX()}, {figure.getY()})"
-        #überprüfung des Typs
-        if isinstance(figure, (Rectangle, Circle)):
-            size = f"({figure.getBoundingBoxWidth()}, {figure.getBoundingBoxHeight()})"
-        else:
-            size = "---"
+        
 
-        #Einen Eintrag im Treeview erstellen
-        node = self.treeview.insert(parent_node, 'end', text=figure.__class__.__name__, values=(pos, size, figure.color, figure.id))
 
-        #Wenn die Figur eine Gruppe ist, ihre Kinder ebenfalls hinzufügen
-        if isinstance(figure, Group):
-            for child in figure.figures:
-                self.fill_tree(node, child)
-
-    def update(self):
-        for i in self.treeview.get_children():
-            self.treeview.delete(i)
-        #Treeview füllen
-        self.fill_tree('', self.model.root)

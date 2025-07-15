@@ -53,7 +53,7 @@ class Figure(ABC):
 		text = self.__str__()
 		return treeview.insert(parent, tk.END, text=text, values=(self.id))
 
-	def findId(self, id:int):
+	def findFigure(self, id:int):
 		if id == self.id:
 			return self
 		else:
@@ -65,8 +65,7 @@ class Figure(ABC):
 		else:
 			return False
 		
-	def deselect(self, canvas):
-		canvas.itemconfig(self.id, width=self.border)
+	def deselect(self):
 		self.selected = False
 		
 	@abstractmethod
@@ -150,14 +149,14 @@ class Group(Figure):
 		for figure in self.figures:
 			figure.treeRecursive(new_parent, treeview)
 
-	def findId(self, id:int):
+	def findFigure(self, id:int):
 		# check if own id matches
 		if id == self.id:
 			return self
 		
 		# go trough all own Figures and return id if matches
 		for figure in self.figures:
-			if not(figure.findId(id) == False):
+			if not(figure.findFigure(id) == False):
 				return figure
 		
 		# return false if id couldnt be found
@@ -176,11 +175,11 @@ class Group(Figure):
 		# return false if id couldnt be found
 		return False
 	
-	def deselect(self, canvas):
-		super().deselect(canvas)
+	def deselect(self):
+		super().deselect()
 
 		for figure in self.figures:
-			figure.deselect(canvas)
+			figure.deselect()
 	
 	def draw(self, canvas:tk.Canvas):
 		x = self.getBoundingBoxX() + self.border*2

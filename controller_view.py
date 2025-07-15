@@ -6,15 +6,15 @@ from tree_view import *
 
 
 class Controller(Observer):
-	def __init__(self, model:Model, destroy:Closer, tree_view: Tree):
+	def __init__(self, model:Model, destroy:Closer):
 		super().__init__()
 		self.destroy = destroy
 		self.model: Model = model
-		self.treeview = tree_view.treeview
 		model.attach(self)
 		destroy.attach(self)
 
 		self.window = tk.Tk()
+		self.window.configure(width=400, height=400)
 		self.window.protocol("WM_DELETE_WINDOW", self.destroy.destroy)
 		self.window.columnconfigure(1, weight=1)
 		self.window.rowconfigure(0, weight=1)
@@ -43,73 +43,93 @@ class Controller(Observer):
 
 		settings.grid(row=0, column=1, sticky="NESW")
 
-	def run(self):
-		self.window.mainloop()
-
-	def update(self):
-		pass
-
+	#Hilfsfunktion um Entries zu kreieren
 	def labeledEntry(self, parent:tk.Frame, label_text:str, i:int):
 		label = tk.Label(parent, text=label_text)
 		entry = tk.Entry(parent)
 		label.grid(row=i, column=0, pady=5)
 		entry.grid(row=i, column=1, sticky="NESW", pady=5)
 		return entry
-	
-	def modify(self):
-		pass
-	
-	def updateGroup(self, component):
-		selected = self.treeview.focus()
-		targetGroup = self.model.root # Standardmäßig auf root setzen, falls nichts ausgewählt oder gefunden wird
 
-		if selected:
-			selectedItem = self.treeview.item(selected)
-			selectedID = selectedItem.get("values")
-			
-			if selectedID: # Prüfen, ob selectedID Werte enthält
-				selectedID = int(selectedID[3]) # Die ID extrahieren
-				targetItem = self.model.get(selectedID)
+	def run(self):
+		self.window.mainloop()
 
-				if targetItem: # Prüfen, ob targetItem nicht False ist (d.h. ein echtes Figure-Objekt)
-					if isinstance(targetItem, Group):
-						targetGroup = targetItem
-					else:
-						# Wenn eine Nicht-Gruppen-Figur ausgewählt ist, fügen Sie die neue Komponente ihrem Elternelement hinzu
-						if targetItem.parent:
-							targetGroup = targetItem.parent
-						else:
-							# Wenn das ausgewählte Element kein Elternelement hat (es ist eine Figur der obersten Ebene),
-							# fügen Sie es der Stammgruppe hinzu.
-							targetGroup = self.model.root
-				# else: targetItem war False, daher bleibt targetGroup der Standard (self.model.root)
-			# else: selectedID war leer, daher bleibt targetGroup der Standard (self.model.root)
+	def update(self, selected_id):
+		if selected_id == None:
+			return
 		
-		targetGroup.add(component)
-		self.model.notify_observers()
+		selected = self.model.selected_figure
+
+		self.x.delete(0, tk.END)
+		self.y.delete(0, tk.END)
+		self.w.delete(0, tk.END)
+		self.h.delete(0, tk.END)
+		self.color.delete(0, tk.END)
+
+		self.x.insert(0, selected.getX())
+		self.y.insert(0, selected.getY())
+
+		#print(type(selected), selected)
+
+		if isinstance(selected, Rectangle):
+			self.w.insert(0, selected.width)
+			self.h.insert(0, selected.height)
+			self.color.insert(0, selected.color)
+
+		elif isinstance(selected, Circle):
+			self.w.insert(0, selected.radius)
+			self.color.insert(0, selected.color)
+
+	#Hilfsfunktion um Figuren der jeweiligen Gruppe hinzu zufügen
+	def addFigure(self, figure):
+		selected = self.model.selected_figure
+
+		if not isinstance(selected, Group):
+			selected = selected.parent
+
+		selected.add(figure)
+
+		self.model.notify_observers(None)
+
+	#für Button: "modify"
+	def modify(self):
+		selected = self.model.selected_figure
+		selected.x = self.x
+		selected.y = self.y
+
+		if isinstance(selected, Rectangle):
+			selected.width = self.w
+			selected.height = self.h
+			selected.color = self.color
+
+		elif isinstance(selected, Circle):
+			selected.radius = self.w
+			selected.color = self.color
+
+		self.model.notify_observers(None)
 	
+	#für Button: "Add Rectangle"
 	def addRectangle(self):
-		id = self.model.getNewId()
 		x = self.x.get()
 		y = self.y.get()
 		w = self.w.get()
 		h = self.h.get()
 		c= self.color.get()
 		
-		self.updateGroup(Rectangle(x, y, w, h, c, id))
+		self.addFigure(Rectangle(x, y, w, h, c))
 	
+	#für Button: "Add Circle"
 	def addCircle(self):
-		id = self.model.getNewId()
 		x = self.x.get()
 		y = self.y.get()
 		r = self.w.get()
 		c= self.color.get()
 		
-		self.updateGroup(Circle(x, y, r, c, id))
+		self.addFigure(Circle(x, y, r, c))
 
+	#für Button: "Add Group"
 	def addGroup(self):
-		id = self.model.getNewId()
 		x = self.x.get()
 		y = self.y.get()
 		
-		self.updateGroup(Group(x, y, id))
+		self.addFigure(Group(x, y))
