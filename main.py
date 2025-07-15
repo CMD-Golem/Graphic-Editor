@@ -27,6 +27,6 @@ g2.add(Rectangle(175, 85, 50, 50, "blue"))
 root.add(g2)
 
 
-#print(root.strRecursive(0))
+print(root.strRecursive(0))
 
 controller.run()

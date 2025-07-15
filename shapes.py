@@ -1,11 +1,11 @@
-from __future__ import annotations # make recursive type hint possible
+from __future__ import annotations # macht rekursive Typen tipps möglich
 from abc import ABC, abstractmethod
 
 import tkinter as tk
 
 # Component
 class Figure(ABC):
-	id_counter = 0
+	id_counter = 0 # Klassenatribut, gilt global für ganzes Programm
 
 	@classmethod
 	def generateId(cls):
@@ -91,29 +91,27 @@ class Group(Figure):
 		self.figures.append(figure)
 
 	def getBoundingBoxX(self):
-		# get lowest (most left) x of figure in group
+		# Sucht Komponente am weitesten links
 		x = 0
 		for figure in self.figures:
 			figure_x = figure.getX()
 			if (figure_x < x):
 				x = figure_x
 
-		# add lowest x to own abs x
 		return self.getAbsX() + x
 
 	def getBoundingBoxY(self):
-		# get lowest (heighest) y of figure in group
+		# Sucht Komponente am weitesten oben
 		y = 0
 		for figure in self.figures:
 			figure_y = figure.getY()
 			if (figure_y < y):
 				y = figure_y
 
-		# add lowest y to own abs y
 		return self.getAbsY() + y
 
 	def getBoundingBoxWidth(self):
-		# find leftmost and rightmost x'es
+		# Sucht weiteste linke und weiteste rechte Komponente
 		leftmost = 0
 		rightmost = 0
 		for figure in self.figures:
@@ -128,7 +126,7 @@ class Group(Figure):
 		return rightmost - leftmost
 
 	def getBoundingBoxHeight(self):
-		# find highest and lowest y'es
+		# Sucht tiefste und höchste Komponente
 		highest = 0
 		lowest = 0
 		for figure in self.figures:
@@ -155,17 +153,15 @@ class Group(Figure):
 			figure.treeRecursive(new_parent, treeview)
 
 	def findFigure(self, selected_id:int):
-		# check if own id matches
 		if selected_id == self.id:
 			return self
 		
-		# go trough all own Figures and return id if matches
 		for figure in self.figures:
 			found_figure = figure.findFigure(selected_id)
 			if not(found_figure == False):
 				return found_figure
 		
-		# return false if id couldnt be found
+		# Gibt False zurück wenn nichts gefunden wird
 		return False
 	
 	def deselect(self):
@@ -175,11 +171,11 @@ class Group(Figure):
 			figure.deselect()
 	
 	def draw(self, canvas:tk.Canvas):
-		x = self.getBoundingBoxX() + self.border*2
-		y = self.getBoundingBoxY() + self.border*2
-		w = self.getBoundingBoxWidth() + self.border*2
-		h = self.getBoundingBoxHeight() + self.border*2
-		canvas.create_rectangle(x, y, x+w, y+h, outline=self.color, dash=(50), fill='', width=self.border, tags=(f"figure_{self.id}", self.id))
+		x = self.getBoundingBoxX() 
+		y = self.getBoundingBoxY() 
+		w = self.getBoundingBoxWidth()
+		h = self.getBoundingBoxHeight()
+		canvas.create_rectangle(x, y, x+w, y+h, outline=self.color, dash=(50), fill='', width=self.border, tags=(f"figure_{self.id}", self.id)) # tag als Tupel mit zwei Werten, erster für ID Suche, zweiter um ID auszulesen
 
 		for figure in self.figures:
 			figure.draw(canvas)
@@ -200,11 +196,11 @@ class Rectangle(Figure):
 		return self.height
 	
 	def draw(self, canvas:tk.Canvas):
-		x = self.getAbsX() + self.border*2
-		y = self.getAbsY() + self.border*2
-		w = self.getBoundingBoxWidth() + self.border*2
-		h = self.getBoundingBoxHeight() + self.border*2
-		canvas.create_rectangle(x, y, x+w, y+h, outline=self.color, width=self.border, fill='', tags=(f"figure_{self.id}", self.id))
+		x = self.getAbsX()
+		y = self.getAbsY()
+		w = self.getBoundingBoxWidth()
+		h = self.getBoundingBoxHeight()
+		canvas.create_rectangle(x, y, x+w, y+h, outline=self.color, width=self.border, fill='', tags=(f"figure_{self.id}", self.id)) # tag als Tupel mit zwei Werten, erster für ID Suche, zweiter um ID auszulesen
 
 class Circle(Figure):
 	def __init__(self, x:int=0, y:int=0, radius:int=1, color:str="black"):
@@ -221,8 +217,8 @@ class Circle(Figure):
 		return 2* self.radius
 	
 	def draw(self, canvas:tk.Canvas):
-		x = self.getAbsX() + self.border*2
-		y = self.getAbsY() + self.border*2
-		w = self.getBoundingBoxWidth() + self.border*2
-		h = self.getBoundingBoxHeight() + self.border*2
-		canvas.create_oval(x, y, x+w, y+h, outline=self.color, width=self.border, fill='', tags=(f"figure_{self.id}", self.id))
+		x = self.getAbsX()
+		y = self.getAbsY()
+		w = self.getBoundingBoxWidth()
+		h = self.getBoundingBoxHeight()
+		canvas.create_oval(x, y, x+w, y+h, outline=self.color, width=self.border, fill='', tags=(f"figure_{self.id}", self.id)) # tag als Tupel mit zwei Werten, erster für ID Suche, zweiter um ID auszulesen

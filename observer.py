@@ -2,11 +2,13 @@ import tkinter as tk
 from abc import ABC, abstractmethod
 from shapes import Group
 
+# Observer Superklasse von: Controller, Drawing, Tree
 class Observer(ABC):
 	@abstractmethod
 	def update(self, selected_id:int):
 		pass
 
+# Subjekt Superklasse von: Model
 class Subject(ABC):
 	def __init__(self):
 		# Liste um die Beobachter zu Speichern
@@ -25,11 +27,11 @@ class Subject(ABC):
 		for observer in self._observers:
 			observer.update(selected_id)
 
-# model
+
 class Model(Subject):
 	def __init__(self):
 		super().__init__()
-		self.root = Group(0, 0)
+		self.root = Group(0, 0) # Anfang der Gruppenhierarchie
 		self.id = 0
 		self.selected_figure = None
 
@@ -37,22 +39,21 @@ class Model(Subject):
 		if selected_id != None:
 			self.selected_figure = self.root.findFigure(selected_id)
 			self.selected_figure.selected = True
-		else:
+		else: # Wenn nichts ausgewählt, selected_figure auf None gesetzt
 			self.selected_figure = None
 
 		self.notify_observers(selected_id)
-		
 
 
-# Class to close all windows
+# Klasse um alle Fenster gleichzeitig zu schliessen
 class Closer:
 	def __init__(self):
-		self.views = [] # list of all windows
+		self.views = [] # Liste mit allen Fenstern
 
-	def attach(self, view:Subject):
-		self.views.append(view) # add new window to the list
+	def attach(self, view):
+		self.views.append(view) # Fenster in der Liste hinzufügen
 
-	# close all windows in the list
+	# Alle Fenster schliessen
 	def destroy(self):
 		for view in self.views:
 			view.window.destroy()
