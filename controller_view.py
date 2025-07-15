@@ -61,18 +61,29 @@ class Controller(Observer):
 	
 	def updateGroup(self, component):
 		selected = self.treeview.focus()
-
-		targetGroup = self.model.root
+		targetGroup = self.model.root # Standardmäßig auf root setzen, falls nichts ausgewählt oder gefunden wird
 
 		if selected:
 			selectedItem = self.treeview.item(selected)
-			selectedID = int(selectedItem.get("values")[3])
-			targetItem = self.model.get(selectedID)
+			selectedID = selectedItem.get("values")
+			
+			if selectedID: # Prüfen, ob selectedID Werte enthält
+				selectedID = int(selectedID[3]) # Die ID extrahieren
+				targetItem = self.model.get(selectedID)
 
-		if isinstance(targetItem, Group):
-			targetGroup = targetItem
-		else:
-			targetGroup = targetItem.parent
+				if targetItem: # Prüfen, ob targetItem nicht False ist (d.h. ein echtes Figure-Objekt)
+					if isinstance(targetItem, Group):
+						targetGroup = targetItem
+					else:
+						# Wenn eine Nicht-Gruppen-Figur ausgewählt ist, fügen Sie die neue Komponente ihrem Elternelement hinzu
+						if targetItem.parent:
+							targetGroup = targetItem.parent
+						else:
+							# Wenn das ausgewählte Element kein Elternelement hat (es ist eine Figur der obersten Ebene),
+							# fügen Sie es der Stammgruppe hinzu.
+							targetGroup = self.model.root
+				# else: targetItem war False, daher bleibt targetGroup der Standard (self.model.root)
+			# else: selectedID war leer, daher bleibt targetGroup der Standard (self.model.root)
 		
 		targetGroup.add(component)
 		self.model.notify_observers()

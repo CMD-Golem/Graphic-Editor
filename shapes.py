@@ -49,6 +49,10 @@ class Figure(ABC):
 	def strRecursive(self, level:int):
 		print(level * "    ", self)
 
+	def treeRecursive(self, parent, treeview):
+		text = self.__str__()
+		return treeview.insert(parent, tk.END, text=text, values=(self.id))
+
 	def findId(self, id:int):
 		if id == self.id:
 			return self
@@ -71,10 +75,9 @@ class Figure(ABC):
 
 # Composite
 class Group(Figure):
-	def __init__(self, x:int=0, y:int=0, id: int=None):
+	def __init__(self, x:int=0, y:int=0):
 		super().__init__(x, y, "magenta")
 		self.figures: list[Figure] = []
-		self.id = id
 
 	def __str__(self):
 		return f"Group: {super().__str__()}"
@@ -141,6 +144,12 @@ class Group(Figure):
 		for figure in self.figures:
 			figure.strRecursive(level)
 
+	def treeRecursive(self, parent, treeview):
+		new_parent = super().treeRecursive(parent, treeview)
+
+		for figure in self.figures:
+			figure.treeRecursive(new_parent, treeview)
+
 	def findId(self, id:int):
 		# check if own id matches
 		if id == self.id:
@@ -149,7 +158,7 @@ class Group(Figure):
 		# go trough all own Figures and return id if matches
 		for figure in self.figures:
 			if not(figure.findId(id) == False):
-				return figure.findId(id)
+				return figure
 		
 		# return false if id couldnt be found
 		return False
@@ -184,11 +193,10 @@ class Group(Figure):
 			figure.draw(canvas)
 
 class Rectangle(Figure):
-	def __init__(self, x:int, y:int, width:int, height:int, color:str, id: int=None):
+	def __init__(self, x:int, y:int, width:int, height:int, color:str):
 		super().__init__(x, y, color)
 		self.width = width
 		self.height = height
-		self.id = id
 
 	def __str__(self):
 		return f"Rectangle: {super().__str__()}, (w: {self.width}, h: {self.height})"
@@ -207,10 +215,9 @@ class Rectangle(Figure):
 		self.id = canvas.create_rectangle(x, y, x+w, y+h, outline=self.color, width=self.border, fill='')
 
 class Circle(Figure):
-	def __init__(self, x:int, y:int, radius:int, color:str, id: int=None):
+	def __init__(self, x:int, y:int, radius:int, color:str):
 		super().__init__(x, y, color)
 		self.radius = radius
-		self.id = id
 
 	def __str__(self):
 		return f"Circle: {super().__str__()}, r: {self.radius}"
