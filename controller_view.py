@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import messagebox
 from shapes import *
 from observer import *
 from tree_view import *
@@ -14,7 +14,9 @@ class Controller(Observer):
 		destroy.attach(self)
 
 		self.window = tk.Tk()
-		self.window.configure(width=400, height=400)
+		self.window.title("Controller View")
+		self.window.geometry("450x380")
+		self.window.resizable(True, False)
 		self.window.protocol("WM_DELETE_WINDOW", self.destroy.destroy)
 		self.window.columnconfigure(1, weight=1)
 		self.window.rowconfigure(0, weight=1)
@@ -58,21 +60,20 @@ class Controller(Observer):
 		self.window.mainloop()
 
 	def update(self, selected_id:int):
-		if selected_id == None:
-			return
-		
-		selected = self.model.selected_figure
-
 		self.x.delete(0, tk.END)
 		self.y.delete(0, tk.END)
 		self.w.delete(0, tk.END)
 		self.h.delete(0, tk.END)
 		self.color.delete(0, tk.END)
+		self.label["text"] = ""
 
+		if selected_id == None:
+			return
+		
+		selected = self.model.selected_figure
+		self.label["text"] = selected
 		self.x.insert(0, selected.getX())
 		self.y.insert(0, selected.getY())
-
-		#print(type(selected), selected)
 
 		if isinstance(selected, Rectangle):
 			self.w.insert(0, selected.width)
@@ -87,11 +88,13 @@ class Controller(Observer):
 	def addFigure(self, figure:Figure):
 		selected = self.model.selected_figure
 
+		if selected == None:
+			messagebox.showinfo(self.window, message="Please select a figure to insert a new figure")
+			return
 		if not isinstance(selected, Group):
 			selected = selected.parent
 
 		selected.add(figure)
-
 		self.model.notify_observers(selected.id)
 
 	def getFigure(self):
@@ -112,26 +115,28 @@ class Controller(Observer):
 		c = self.color.get() or "black"
 		return x, y, r, c 
 
-	#für Button: "modify"
+	# für Button: "modify"
 	def modify(self):
 		selected = self.model.selected_figure
 
+		if selected == None:
+			messagebox.showinfo(self.window, message="Please select the figure to modify")
+			return
 		if isinstance(selected, Rectangle):
-			selected.x, selected.y, selected.width, selected.height, selected.color = self.getRectangle()
-
+			selected.rel_x, selected.rel_y, selected.width, selected.height, selected.color = self.getRectangle()
 		elif isinstance(selected, Circle):
-			selected.x, selected.y, selected.radius, selected.color = self.getCircle()
+			selected.rel_x, selected.rel_y, selected.radius, selected.color = self.getCircle()
 		else:
-			selected.x, selected.y, = self.getFigure()
+			selected.rel_x, selected.rel_y, = self.getFigure()
 
 		self.model.notify_observers(selected.id)
 	
-	#für Button: "Add Rectangle"
+	# für Button: "Add Rectangle"
 	def addRectangle(self):
 		x, y, w, h, c = self.getRectangle()
 		self.addFigure(Rectangle(x, y, w, h, c))
 	
-	#für Button: "Add Circle"
+	# für Button: "Add Circle"
 	def addCircle(self):
 		x, y, r, c = self.getCircle()
 		self.addFigure(Circle(x, y, r, c))
@@ -142,5 +147,9 @@ class Controller(Observer):
 		self.addFigure(Group(x, y))
 
 	def delete(self):
+		if self.model.selected_figure == None:
+			messagebox.showinfo(self.window, message="Please select the figure to delete")
+			return
+
 		self.model.selected_figure.delete()
 		self.model.notify_observers(None)

@@ -12,12 +12,22 @@ class Tree(Observer):
 		destroy.attach(self)
 
 		self.window = tk.Tk()
+		self.window.title("Tree View")
+		self.window.geometry("600x300")
+		self.window.resizable(True, True)
 		self.window.protocol("WM_DELETE_WINDOW", self.destroy.destroy)
+
+		self.window.columnconfigure(0, weight=1)
+		self.window.rowconfigure(0, weight=1)
 		
 		self.treeview = ttk.Treeview(self.window, columns=("id"))
 		self.treeview["displaycolumns"] = ()
 		self.treeview.bind("<Button-1>", self.getSelection)
-		self.treeview.pack(fill=tk.BOTH, expand=True)
+		self.treeview.grid(column=0, row=0, sticky=tk.NSEW)
+
+		vbar = tk.Scrollbar(self.window,orient=tk.VERTICAL, command=self.treeview.yview)
+		self.treeview.configure(yscrollcommand=vbar.set)
+		vbar.grid(column=1, row=0, sticky=tk.NS)
 
 	def run(self):
 		self.window.mainloop()

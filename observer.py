@@ -34,11 +34,12 @@ class Model(Subject):
 		self.selected_figure = None
 
 	def setSelection(self, selected_id:int):
-		print("Search id:", selected_id)
 		if selected_id != None:
 			self.selected_figure = self.root.findFigure(selected_id)
-			print("Found Figure:", self.selected_figure)
 			self.selected_figure.selected = True
+		else:
+			self.selected_figure = None
+
 		self.notify_observers(selected_id)
 		
 

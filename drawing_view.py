@@ -10,32 +10,38 @@ class Drawing(Observer):
 		destroy.attach(self)
 
 		self.window = tk.Tk()
+		self.window.title("Drawing View")
+		self.window.geometry("800x400")
+		self.window.resizable(True, True)
 		self.window.protocol("WM_DELETE_WINDOW", self.destroy.destroy)
 
-		button = tk.Button(self.window, text="Refresh", command=lambda: self.update(None))
-		button.pack()
+		self.window.columnconfigure(0, weight=1)
+		self.window.rowconfigure(1, weight=1)
 
-		self.canvas = tk.Canvas(self.window, width=800, height=400)
-		self.canvas.pack(fill="both", expand=True)
+		button = tk.Button(self.window, text="Refresh", command=lambda: self.update(None))
+		button.grid(column=0, row=0, columnspan=2)
+
+		self.canvas = tk.Canvas(self.window)
+		self.canvas.grid(column=0, row=1, sticky=tk.NSEW)
 
 		self.canvas.bind("<Button-1>", self.getSelection)
 
-		"""
 		hbar = tk.Scrollbar(self.window, orient=tk.HORIZONTAL, command=self.canvas.xview)
-		hbar.pack(side=tk.BOTTOM,fill=tk.X)
-		vbar=tk.Scrollbar(self.window,orient=tk.VERTICAL, command=self.canvas.yview)
-		vbar.pack(side=tk.RIGHT,fill=tk.Y)
-		self.window.config(Xscrollcommand=hbar.set, Yscrollcommand=vbar.set)
-		"""
-
-		#self.window.pack(side=tk.LEFT,expand=True,fill=tk.BOTH)
+		vbar = tk.Scrollbar(self.window,orient=tk.VERTICAL, command=self.canvas.yview)
+		self.canvas.configure(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
+		hbar.grid(column=0, row=2, columnspan=2, sticky=tk.EW)
+		vbar.grid(column=1, row=1, sticky=tk.NS)
 
 	def run(self):
 		self.window.mainloop()
 
 	def getSelection(self, event):
 		click_margin = 5
-		selected = self.canvas.find_overlapping(event.x - click_margin, event.y - click_margin,event.x + click_margin, event.y + click_margin)
+
+		x = self.canvas.canvasx(event.x)
+		y = self.canvas.canvasy(event.y)
+
+		selected = self.canvas.find_overlapping(x - click_margin, y - click_margin, x + click_margin, y + click_margin)
 		self.deselect()
 
 		if len(selected) >= 1:
