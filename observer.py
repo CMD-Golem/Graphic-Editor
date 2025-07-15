@@ -23,7 +23,7 @@ class Subject(ABC):
 	# Beobachter benachrichtigen
 	def notify_observers(self):
 		for observer in self._observers:
-			observer.update(self)
+			observer.update()
 
 # model
 class Model(Subject):

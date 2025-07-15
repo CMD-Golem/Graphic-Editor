@@ -2,13 +2,15 @@ import tkinter as tk
 from tkinter import ttk
 from shapes import *
 from observer import *
+from tree_view import *
 
 
 class Controller(Observer):
-	def __init__(self, model:Model, destroy:Closer):
+	def __init__(self, model:Model, destroy:Closer, tree_view: Tree):
 		super().__init__()
 		self.destroy = destroy
 		self.model: Model = model
+		self.treeview = tree_view.treeview
 		model.attach(self)
 		destroy.attach(self)
 
@@ -58,13 +60,32 @@ class Controller(Observer):
 		pass
 	
 	def updateGroup(self, component):
-		selected = self.treeview.item(self.treeview.focus())
-		Group = self.model.get(selected.get("values")[3])
+		selected = self.treeview.focus()
+		targetGroup = self.model.root # Standardmäßig auf root setzen, falls nichts ausgewählt oder gefunden wird
 
-		if not(type(Group, Group)):
-			Group = Group.parent
+		if selected:
+			selectedItem = self.treeview.item(selected)
+			selectedID = selectedItem.get("values")
+			
+			if selectedID: # Prüfen, ob selectedID Werte enthält
+				selectedID = int(selectedID[3]) # Die ID extrahieren
+				targetItem = self.model.get(selectedID)
+
+				if targetItem: # Prüfen, ob targetItem nicht False ist (d.h. ein echtes Figure-Objekt)
+					if isinstance(targetItem, Group):
+						targetGroup = targetItem
+					else:
+						# Wenn eine Nicht-Gruppen-Figur ausgewählt ist, fügen Sie die neue Komponente ihrem Elternelement hinzu
+						if targetItem.parent:
+							targetGroup = targetItem.parent
+						else:
+							# Wenn das ausgewählte Element kein Elternelement hat (es ist eine Figur der obersten Ebene),
+							# fügen Sie es der Stammgruppe hinzu.
+							targetGroup = self.model.root
+				# else: targetItem war False, daher bleibt targetGroup der Standard (self.model.root)
+			# else: selectedID war leer, daher bleibt targetGroup der Standard (self.model.root)
 		
-		Group.add_component(component)
+		targetGroup.add(component)
 		self.model.notify_observers()
 	
 	def addRectangle(self):
