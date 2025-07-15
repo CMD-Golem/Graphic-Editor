@@ -30,27 +30,35 @@ class Drawing(Observer):
 
 		#self.window.pack(side=tk.LEFT,expand=True,fill=tk.BOTH)
 
-	def getSelection(self, event):
-		click_margin = 5
-		self.deselect()
-
-		figures = self.canvas.find_overlapping(event.x - click_margin, event.y - click_margin,event.x + click_margin, event.y + click_margin)
-
-		if len(figures) >= 1:
-			self.model.setSelection(figures[0])
-
-	def deselect(self):
-		for id in self.canvas.find_all():
-			self.canvas.itemconfig(id, width=self.model.root.border)
-		self.model.root.deselect()
-
 	def run(self):
 		self.window.mainloop()
 
-	def update(self, selected_id):
-		if selected_id != None:
-			self.canvas.itemconfig(selected_id, width=6)
+	def getSelection(self, event):
+		click_margin = 5
+		selected = self.canvas.find_overlapping(event.x - click_margin, event.y - click_margin,event.x + click_margin, event.y + click_margin)
+		self.deselect()
+
+		if len(selected) >= 1:
+			selected_id = self.canvas.gettags(selected[0])[1]
+			self.model.setSelection(int(selected_id))
+		else:
+			self.model.setSelection(None)
+
+	def deselect(self):
+		self.model.root.deselect()
+
+		for item in self.canvas.find_all():
+			self.canvas.itemconfig(item, width=self.model.root.border)
+
+	def update(self, selected_id:int):
+		# zeichnet daten auf den canvas und berechnet grösse neu
+		self.canvas.delete("all")
 		self.model.root.draw(self.canvas)
 		self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+		# wählt ID aus
+		if selected_id != None:
+			item = self.canvas.find_withtag((f"figure_{selected_id}"))
+			self.canvas.itemconfig(item, width=6)
 		
 

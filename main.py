@@ -29,10 +29,4 @@ root.add(g2)
 
 #print(root.strRecursive(0))
 
-m.root.draw(drawing.canvas)
-m.notify_observers(None)
-
-
-drawing.run()
 controller.run()
-tree.run()

@@ -5,11 +5,18 @@ import tkinter as tk
 
 # Component
 class Figure(ABC):
+	id_counter = 0
+
+	@classmethod
+	def generateId(cls):
+		cls.id_counter += 1
+		return cls.id_counter
+
 	def __init__(self, x:int, y:int, col:str):
 		self.rel_x = x
 		self.rel_y = y
 		self.color = col
-		self.id = None
+		self.id = Figure.generateId()
 		self.parent = None
 		self.border = 2
 		self.selected = False
@@ -19,6 +26,10 @@ class Figure(ABC):
 
 	def set_parent(self, parent:Figure):
 		self.parent = parent
+
+	def delete(self):
+		if self.parent:
+			self.parent.figures.remove(self)
 
 	def getX(self):
 		return self.rel_x
@@ -51,16 +62,10 @@ class Figure(ABC):
 
 	def treeRecursive(self, parent, treeview):
 		text = self.__str__()
-		return treeview.insert(parent, tk.END, text=text, values=(self.id))
+		return treeview.insert(parent, tk.END, text=text, values=self.id)
 
-	def findFigure(self, id:int):
-		if id == self.id:
-			return self
-		else:
-			return False
-		
-	def findSelected(self):
-		if self.selected:
+	def findFigure(self, selected_id:int):
+		if selected_id == self.id:
 			return self
 		else:
 			return False
@@ -149,28 +154,16 @@ class Group(Figure):
 		for figure in self.figures:
 			figure.treeRecursive(new_parent, treeview)
 
-	def findFigure(self, id:int):
+	def findFigure(self, selected_id:int):
 		# check if own id matches
-		if id == self.id:
+		if selected_id == self.id:
 			return self
 		
 		# go trough all own Figures and return id if matches
 		for figure in self.figures:
-			if not(figure.findFigure(id) == False):
-				return figure
-		
-		# return false if id couldnt be found
-		return False
-	
-	def findSelected(self):
-		# check if own id matches
-		if self.selected:
-			return self
-		
-		# go trough all own Figures and return id if matches
-		for figure in self.figures:
-			if not(figure.findSelected() == False):
-				return figure.findSelected()
+			found_figure = figure.findFigure(selected_id)
+			if not(found_figure == False):
+				return found_figure
 		
 		# return false if id couldnt be found
 		return False
@@ -186,13 +179,13 @@ class Group(Figure):
 		y = self.getBoundingBoxY() + self.border*2
 		w = self.getBoundingBoxWidth() + self.border*2
 		h = self.getBoundingBoxHeight() + self.border*2
-		self.id = canvas.create_rectangle(x, y, x+w, y+h, outline=self.color, dash=(50), fill='', width=self.border)
+		canvas.create_rectangle(x, y, x+w, y+h, outline=self.color, dash=(50), fill='', width=self.border, tags=(f"figure_{self.id}", self.id))
 
 		for figure in self.figures:
 			figure.draw(canvas)
 
 class Rectangle(Figure):
-	def __init__(self, x:int, y:int, width:int, height:int, color:str):
+	def __init__(self, x:int=0, y:int=0, width:int=1, height:int=1, color:str="black"):
 		super().__init__(x, y, color)
 		self.width = width
 		self.height = height
@@ -211,10 +204,10 @@ class Rectangle(Figure):
 		y = self.getAbsY() + self.border*2
 		w = self.getBoundingBoxWidth() + self.border*2
 		h = self.getBoundingBoxHeight() + self.border*2
-		self.id = canvas.create_rectangle(x, y, x+w, y+h, outline=self.color, width=self.border, fill='')
+		canvas.create_rectangle(x, y, x+w, y+h, outline=self.color, width=self.border, fill='', tags=(f"figure_{self.id}", self.id))
 
 class Circle(Figure):
-	def __init__(self, x:int, y:int, radius:int, color:str):
+	def __init__(self, x:int=0, y:int=0, radius:int=1, color:str="black"):
 		super().__init__(x, y, color)
 		self.radius = radius
 
@@ -232,4 +225,4 @@ class Circle(Figure):
 		y = self.getAbsY() + self.border*2
 		w = self.getBoundingBoxWidth() + self.border*2
 		h = self.getBoundingBoxHeight() + self.border*2
-		self.id = canvas.create_oval(x, y, x+w, y+h, outline=self.color, width=self.border, fill='')
+		canvas.create_oval(x, y, x+w, y+h, outline=self.color, width=self.border, fill='', tags=(f"figure_{self.id}", self.id))

@@ -4,7 +4,7 @@ from shapes import Group
 
 class Observer(ABC):
 	@abstractmethod
-	def update(self, selected_id):
+	def update(self, selected_id:int):
 		pass
 
 class Subject(ABC):
@@ -13,17 +13,17 @@ class Subject(ABC):
 		self._observers = []
 
 	# Beobachter anmelden
-	def attach(self, observer):
+	def attach(self, observer:Observer):
 		self._observers.append(observer)
 
 	# Beobachter abmelden
-	def detach(self, observer):
+	def detach(self, observer:Observer):
 		self._observers.remove(observer)
 
 	# Beobachter benachrichtigen
-	def notify_observers(self, id):
+	def notify_observers(self, selected_id:int):
 		for observer in self._observers:
-			observer.update(id)
+			observer.update(selected_id)
 
 # model
 class Model(Subject):
@@ -33,11 +33,11 @@ class Model(Subject):
 		self.id = 0
 		self.selected_figure = None
 
-	def setSelection(self, selected_id):
+	def setSelection(self, selected_id:int):
+		print("Search id:", selected_id)
 		if selected_id != None:
 			self.selected_figure = self.root.findFigure(selected_id)
-			print(self.selected_figure)
-			print(type(self.selected_figure))
+			print("Found Figure:", self.selected_figure)
 			self.selected_figure.selected = True
 		self.notify_observers(selected_id)
 		
