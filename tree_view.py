@@ -21,7 +21,7 @@ class Tree(Observer):
 		self.window.columnconfigure(0, weight=1)
 		self.window.rowconfigure(0, weight=1)
 		
-		self.treeview = ttk.Treeview(self.window, columns=("id"))
+		self.treeview = ttk.Treeview(self.window, columns=("id"), show="tree") # show tree zeigt nur tree an -> header row wird ausgeblendet
 		self.treeview["displaycolumns"] = () # Blendet IDs im Treeview aus
 		self.treeview.bind("<Button-1>", self.getSelection)
 		self.treeview.grid(column=0, row=0, sticky=tk.NSEW)
@@ -38,19 +38,13 @@ class Tree(Observer):
 		# Findet angeklickte Zeile
 		item = self.treeview.identify_row(event.y)
 		
-		self.deselect()
+		self.model.root.deselect()
 
 		if item:
 			selected_id = self.treeview.item(item, "values")[0] # ID ist in der nullten Stelle von Values abgespeichert
 			self.model.setSelection(int(selected_id))
 		else:
 			self.model.setSelection(None)
-
-	def deselect(self):
-		self.model.root.deselect()
-
-		if len(self.treeview.selection()) >= 1: 
-			self.treeview.selection_remove(self.treeview.selection()[0])
 
 	def update(self, selected_id:int):
 		# lädt daten ins treeview
@@ -68,15 +62,15 @@ class Tree(Observer):
 
 	def getAllChildren(self, parent=""):
 		# Erstellt bei jedem Aufruf eine neue leere Liste
-		items_list = []
+		children = []
 
 		for child in self.treeview.get_children(parent):
-			items_list.append(child)
+			children.append(child)
 
-			# Erweitert aktuelle Liste mit allen Nachkommen durch rekursives Aufrufen
-			items_list.extend(self.getAllChildren(child))
+			# Erweitert aktuelle Liste mit allen Kindern durch rekursives Aufrufen
+			children.extend(self.getAllChildren(child))
 
-		return items_list
+		return children
 		
 		
 

@@ -38,9 +38,11 @@ class Model(Subject):
 	def setSelection(self, selected_id:int):
 		if selected_id != None:
 			self.selected_figure = self.root.findFigure(selected_id)
-			self.selected_figure.selected = True
-		else: # Wenn nichts ausgewählt, selected_figure auf None gesetzt
+		else:
 			self.selected_figure = None
+			
+		if self.selected_figure != None:
+			self.selected_figure.selected = True
 
 		self.notify_observers(selected_id)
 

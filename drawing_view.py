@@ -19,10 +19,10 @@ class Drawing(Observer):
 		self.window.columnconfigure(0, weight=1)
 		self.window.rowconfigure(1, weight=1)
 
-		button = tk.Button(self.window, text="Refresh", command=lambda: self.update(None))
-		button.grid(column=0, row=0)
+		button = tk.Button(self.window, text="Refresh", command=lambda: self.update(self.model.selected_figure.id))
+		button.grid(column=0, row=0, pady=5)
 
-		self.canvas = tk.Canvas(self.window)
+		self.canvas = tk.Canvas(self.window, bg="white")
 		self.canvas.grid(column=0, row=1, sticky=tk.NSEW)
 
 		self.canvas.bind("<Button-1>", self.getSelection) # Einfacher Mausklick ruft getSelection auf
@@ -46,7 +46,7 @@ class Drawing(Observer):
 		click_margin = 5 # Maus-hitbox quadratische seitenlänge 10
 		selected = self.canvas.find_overlapping(x - click_margin, y - click_margin, x + click_margin, y + click_margin)
 		
-		self.deselect()
+		self.model.root.deselect()
 
 		if len(selected) >= 1:
 			selected_id = self.canvas.gettags(selected[0])[1] # Tupel wird entpackt -> nur Zahlen ID
@@ -54,17 +54,11 @@ class Drawing(Observer):
 		else:
 			self.model.setSelection(None)
 
-	def deselect(self):
-		self.model.root.deselect()
-
-		for item in self.canvas.find_all():
-			self.canvas.itemconfig(item, width=self.model.root.border)
-
 	def update(self, selected_id:int):
 		# Zeichnet daten auf den canvas und berechnet grösse neu
 		self.canvas.delete("all")
 		self.model.root.draw(self.canvas)
-		self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+		self.canvas.configure(scrollregion=self.canvas.bbox("all")) # scrollbereich neu berechnen
 
 		# Wählt ID aus
 		if selected_id != None:

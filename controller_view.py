@@ -19,6 +19,7 @@ class Controller(Observer):
 		self.window.geometry("450x380")
 		self.window.resizable(True, False)
 		self.window.protocol("WM_DELETE_WINDOW", self.destroy.destroy)
+
 		self.window.columnconfigure(1, weight=1)
 		self.window.rowconfigure(0, weight=1)
 
@@ -69,7 +70,7 @@ class Controller(Observer):
 		self.color.delete(0, tk.END)
 		self.label["text"] = ""
 
-		# Wenn nichts ausgewählt ist, Methode wird abgebrochen
+		# Wenn nichts ausgewählt ist, wird Methode abgebrochen
 		if selected_id == None:
 			return
 		
@@ -87,7 +88,7 @@ class Controller(Observer):
 			self.w.insert(0, selected.radius)
 			self.color.insert(0, selected.color)
 
-	# Hilfsfunktionen um Figuren der jeweiligen Gruppe hinzu zufügen
+	# Hilfsfunktionen um Figuren der jeweiligen Gruppe hinzu zufügen und um Werte auszulesen
 	def addFigure(self, figure:Figure):
 		selected = self.model.selected_figure
 
@@ -100,55 +101,47 @@ class Controller(Observer):
 
 		selected.add(figure)
 		self.model.notify_observers(selected.id)
-
+	
 	def getFigure(self):
 		x = int(self.x.get() or 0)
 		y = int(self.y.get() or 0)
-		return (x, y)
-	
-	def getRectangle(self):
-		x, y = self.getFigure()
 		w = int(self.w.get() or 1)
 		h = int(self.h.get() or 1)
 		c = self.color.get() or "black"
 		return x, y, w, h, c
-	
-	def getCircle(self):
-		x, y = self.getFigure()
-		r = int(self.w.get() or 1)
-		c = self.color.get() or "black"
-		return x, y, r, c 
+
 
 	# für Button: "modify"
 	def modify(self):
 		selected = self.model.selected_figure
+		x, y, w, h, c = self.getFigure()
 
 		# Messagebox als Fehlermeldung an Nutzer, wenn nichts ausgewählt ist
 		if selected == None:
 			messagebox.showinfo(self.window, message="Please select the figure to modify")
 			return
 		if isinstance(selected, Rectangle):
-			selected.rel_x, selected.rel_y, selected.width, selected.height, selected.color = self.getRectangle()
+			selected.updateRectangle(x, y, w, h, c)
 		elif isinstance(selected, Circle):
-			selected.rel_x, selected.rel_y, selected.radius, selected.color = self.getCircle()
+			selected.updateCircle(x, y, w, c)
 		else:
-			selected.rel_x, selected.rel_y, = self.getFigure()
+			selected.updateGroup(x, y)
 
 		self.model.notify_observers(selected.id)
 	
 	# für Button: "Add Rectangle"
 	def addRectangle(self):
-		x, y, w, h, c = self.getRectangle()
+		x, y, w, h, c = self.getFigure()
 		self.addFigure(Rectangle(x, y, w, h, c))
 	
 	# für Button: "Add Circle"
 	def addCircle(self):
-		x, y, r, c = self.getCircle()
+		x, y, r, _, c = self.getFigure() # _ sorgen dafür das Werte im Tuple richtig gehändlet werden, aber nicht extra als Variable gespeichert werden
 		self.addFigure(Circle(x, y, r, c))
 
 	#für Button: "Add Group"
 	def addGroup(self):
-		x, y = self.getFigure()
+		x, y, _, _, _ = self.getFigure() # _ sorgen dafür das Werte im Tuple richtig gehändlet werden, aber nicht extra als Variable gespeichert werden
 		self.addFigure(Group(x, y))
 
 	def delete(self):

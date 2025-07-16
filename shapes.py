@@ -12,24 +12,27 @@ class Figure(ABC):
 		cls.id_counter += 1
 		return cls.id_counter
 
-	def __init__(self, x:int, y:int, col:str):
-		self.rel_x = x
-		self.rel_y = y
-		self.color = col
+	def __init__(self):
 		self.id = Figure.generateId()
 		self.parent = None
 		self.border = 2
 		self.selected = False
 
+	def updateFigure(self, x:int, y:int, color:str):
+		self.rel_x = x
+		self.rel_y = y
+		self.color = color
+
 	def __str__(self):
 		return f"(x {self.getX()}, y {self.getY()}, w {self.getBoundingBoxWidth()}, h {self.getBoundingBoxHeight()}), (abs: x {self.getAbsX()}, y {self.getAbsY()}), col:{self.color}"
 
-	def set_parent(self, parent:Figure):
+	def setParent(self, parent:Figure):
 		self.parent = parent
 
 	def delete(self):
 		if self.parent:
 			self.parent.figures.remove(self)
+			self.parent = None
 
 	def getX(self):
 		return self.rel_x
@@ -58,17 +61,22 @@ class Figure(ABC):
 		pass
 		
 	def strRecursive(self, level:int):
-		print(level * "    ", self)
+		return (level * "    ") + self.__str__() + "\n"
 
 	def treeRecursive(self, parent, treeview):
-		text = self.__str__()
+		# Wenn Figur kein Parent hat, ist sie eine TopLevelGroup
+		if parent == "":
+			text = "TopLevel" + self.__str__()
+		else:
+			text = self.__str__()
+		# return brauchts damit dieser später allenfalls als parent verwedent werden kann
 		return treeview.insert(parent, tk.END, text=text, values=self.id)
 
 	def findFigure(self, selected_id:int):
 		if selected_id == self.id:
 			return self
 		else:
-			return False
+			return None
 		
 	def deselect(self):
 		self.selected = False
@@ -80,14 +88,18 @@ class Figure(ABC):
 # Composite
 class Group(Figure):
 	def __init__(self, x:int=0, y:int=0):
-		super().__init__(x, y, "magenta")
+		super().__init__()
+		self.updateGroup(x, y)
 		self.figures: list[Figure] = []
+
+	def updateGroup(self, x:int=0, y:int=0):
+		self.updateFigure(x, y, "magenta")
 
 	def __str__(self):
 		return f"Group: {super().__str__()}"
 	
 	def add(self, figure:Figure):
-		figure.set_parent(self)
+		figure.setParent(self)
 		self.figures.append(figure)
 
 	def getBoundingBoxX(self):
@@ -140,11 +152,13 @@ class Group(Figure):
 
 		return lowest - highest
 	
-	def strRecursive(self, level:int=0):
-		super().strRecursive(level)
+	def strRecursive(self, level:int=0, string:str=""):
+		string += super().strRecursive(level)
 		level += 1
 		for figure in self.figures:
-			figure.strRecursive(level)
+			string += figure.strRecursive(level)
+		
+		return string
 
 	def treeRecursive(self, parent, treeview):
 		new_parent = super().treeRecursive(parent, treeview)
@@ -158,11 +172,11 @@ class Group(Figure):
 		
 		for figure in self.figures:
 			found_figure = figure.findFigure(selected_id)
-			if not(found_figure == False):
+			if found_figure != None:
 				return found_figure
 		
-		# Gibt False zurück wenn nichts gefunden wird
-		return False
+		# Gibt None zurück wenn nichts gefunden wird
+		return None
 	
 	def deselect(self):
 		super().deselect()
@@ -182,7 +196,11 @@ class Group(Figure):
 
 class Rectangle(Figure):
 	def __init__(self, x:int=0, y:int=0, width:int=1, height:int=1, color:str="black"):
-		super().__init__(x, y, color)
+		super().__init__()
+		self.updateRectangle(x, y, width, height, color)
+
+	def updateRectangle(self, x:int=0, y:int=0, width:int=1, height:int=1, color:str="black"):
+		self.updateFigure(x, y, color)
 		self.width = width
 		self.height = height
 
@@ -204,7 +222,11 @@ class Rectangle(Figure):
 
 class Circle(Figure):
 	def __init__(self, x:int=0, y:int=0, radius:int=1, color:str="black"):
-		super().__init__(x, y, color)
+		super().__init__()
+		self.updateCircle(x, y, radius, color)
+
+	def updateCircle(self, x:int=0, y:int=0, radius:int=1, color:str="black"):
+		self.updateFigure(x, y, color)
 		self.radius = radius
 
 	def __str__(self):
